@@ -5,10 +5,24 @@ const DEFAULT_SETTINGS = {
   autoDetectApi: true,
   autoDetectFingerprint: true,
   autoShowOnShellyAp: true,
+  language: "en",
   defaultIp: "192.168.1.30",
   allowHosts: [],
   denyHosts: []
 };
+let currentLanguage = "en";
+
+function t(key, replacements) {
+  return window.SHELLY_INSTALLER_HELPER_I18N.t(currentLanguage, key, replacements);
+}
+
+function applyTranslations() {
+  document.documentElement.lang = currentLanguage;
+  document.title = t("optionsTitle");
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    element.textContent = t(element.dataset.i18n);
+  });
+}
 
 function getSettings() {
   return new Promise((resolve) => {
@@ -38,6 +52,13 @@ function setMessage(value) {
 
 async function load() {
   const settings = await getSettings();
+  currentLanguage = window.SHELLY_INSTALLER_HELPER_I18N.normalizeLanguage(settings.language);
+  const languageSelect = document.getElementById("language");
+  languageSelect.innerHTML = window.SHELLY_INSTALLER_HELPER_I18N.languages.map(([code, label]) => (
+    `<option value="${code}">${label}</option>`
+  )).join("");
+  languageSelect.value = currentLanguage;
+  applyTranslations();
   document.getElementById("autoDetectApi").checked = !!settings.autoDetectApi;
   document.getElementById("autoDetectFingerprint").checked = !!settings.autoDetectFingerprint;
   document.getElementById("autoShowOnShellyAp").checked = !!settings.autoShowOnShellyAp;
@@ -51,20 +72,27 @@ async function save() {
     autoDetectApi: document.getElementById("autoDetectApi").checked,
     autoDetectFingerprint: document.getElementById("autoDetectFingerprint").checked,
     autoShowOnShellyAp: document.getElementById("autoShowOnShellyAp").checked,
+    language: document.getElementById("language").value,
     defaultIp: document.getElementById("defaultIp").value.trim() || DEFAULT_SETTINGS.defaultIp,
     allowHosts: linesToList(document.getElementById("allowHosts").value),
     denyHosts: linesToList(document.getElementById("denyHosts").value)
   };
+  currentLanguage = window.SHELLY_INSTALLER_HELPER_I18N.normalizeLanguage(settings.language);
+  applyTranslations();
   await saveSettings(settings);
-  setMessage("Settings saved.");
+  setMessage(t("settingsSaved"));
 }
 
 async function reset() {
   await saveSettings(DEFAULT_SETTINGS);
   await load();
-  setMessage("Default settings restored.");
+  setMessage(t("defaultsRestored"));
 }
 
 document.getElementById("save").addEventListener("click", save);
 document.getElementById("reset").addEventListener("click", reset);
+document.getElementById("language").addEventListener("change", () => {
+  currentLanguage = window.SHELLY_INSTALLER_HELPER_I18N.normalizeLanguage(document.getElementById("language").value);
+  applyTranslations();
+});
 load();

@@ -3,55 +3,63 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Shelly Installer Helper settings</title>
+    <title data-i18n="optionsTitle">Shelly Installer Helper settings</title>
     <link rel="stylesheet" href="options.css">
   </head>
   <body>
     <main>
       <header>
         <p class="eyebrow">Shelly helper</p>
-        <h1>Settings</h1>
+        <h1 data-i18n="settings">Settings</h1>
       </header>
+
+      <section class="card">
+        <label>
+          <span data-i18n="language">Language</span>
+          <select id="language"></select>
+        </label>
+      </section>
 
       <section class="card">
         <label class="check">
           <input id="autoDetectApi" type="checkbox">
-          <span>Automatic Shelly API detection</span>
+          <span data-i18n="autoApi">Automatic Shelly API detection</span>
         </label>
         <label class="check">
           <input id="autoShowOnShellyAp" type="checkbox">
-          <span>Show automatically on 192.168.33.1</span>
+          <span data-i18n="autoAp">Show automatically on 192.168.33.1</span>
         </label>
         <label class="check">
           <input id="autoDetectFingerprint" type="checkbox">
-          <span>HTML/UI fingerprint fallback on private network hosts</span>
+          <span data-i18n="autoFingerprint">HTML/UI fingerprint fallback on private network hosts</span>
         </label>
       </section>
 
       <section class="card">
         <label>
-          <span>Default device IP/host for the URL generator</span>
+          <span data-i18n="defaultIp">Default device IP/host for the URL generator</span>
           <input id="defaultIp" type="text" placeholder="192.168.1.30">
         </label>
       </section>
 
       <section class="grid">
         <label>
-          <span>Always allowed hosts</span>
+          <span data-i18n="allowedHosts">Always allowed hosts</span>
           <textarea id="allowHosts" placeholder="http://192.168.1.42"></textarea>
         </label>
         <label>
-          <span>Blocked hosts</span>
+          <span data-i18n="blockedHosts">Blocked hosts</span>
           <textarea id="denyHosts" placeholder="http://example.local"></textarea>
         </label>
       </section>
 
       <section class="actions">
-        <button id="save" type="button">Save</button>
-        <button id="reset" type="button">Reset defaults</button>
+        <button id="save" type="button" data-i18n="save">Save</button>
+        <button id="reset" type="button" data-i18n="resetDefaults">Reset defaults</button>
       </section>
       <p id="message" aria-live="polite"></p>
     </main>
+    <script src="locales.js"></script>
     <script src="options.js"></script>
   </body>
 </html>

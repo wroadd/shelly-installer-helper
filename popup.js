@@ -1,6 +1,30 @@
 "use strict";
 
 const SOURCE = "shelly-installer-helper";
+const SETTINGS_KEY = "sihSettings";
+const DEFAULT_SETTINGS = {
+  language: "en"
+};
+let currentLanguage = "en";
+
+function t(key, replacements) {
+  return window.SHELLY_INSTALLER_HELPER_I18N.t(currentLanguage, key, replacements);
+}
+
+function getSettings() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get({ [SETTINGS_KEY]: DEFAULT_SETTINGS }, (items) => {
+      resolve({ ...DEFAULT_SETTINGS, ...(items[SETTINGS_KEY] || {}) });
+    });
+  });
+}
+
+function applyTranslations() {
+  document.documentElement.lang = currentLanguage;
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    element.textContent = t(element.dataset.i18n);
+  });
+}
 
 function setText(id, value) {
   document.getElementById(id).textContent = value || "-";
@@ -17,7 +41,7 @@ async function activeTab() {
 
 async function sendToActiveTab(type) {
   const tab = await activeTab();
-  if (!tab || !tab.id) throw new Error("No active tab.");
+  if (!tab || !tab.id) throw new Error(t("noActiveTab"));
   return chrome.tabs.sendMessage(tab.id, { source: SOURCE, type });
 }
 
@@ -30,11 +54,11 @@ function deviceName(state) {
 async function refresh() {
   try {
     const state = await sendToActiveTab("GET_PAGE_STATE");
-    setText("status", state.active ? `Active (${state.detection && state.detection.reason || "detected"})` : "Not active");
+    setText("status", state.active ? `${t("active")} (${state.detection && state.detection.reason || t("detected")})` : t("notActive"));
     setText("host", state.host);
     setText("device", deviceName(state));
   } catch (error) {
-    setText("status", "Not available on this page");
+    setText("status", t("notAvailableOnPage"));
     setText("host", "-");
     setText("device", "-");
   }
@@ -43,29 +67,29 @@ async function refresh() {
 document.getElementById("open-helper").addEventListener("click", async () => {
   try {
     await sendToActiveTab("OPEN_HELPER");
-    setMessage("Helper opened on the page.");
+    setMessage(t("helperOpened"));
   } catch (error) {
-    setMessage("The helper cannot be opened on this page.");
+    setMessage(t("helperCannotOpen"));
   }
 });
 
 document.getElementById("enable-host").addEventListener("click", async () => {
   try {
     await sendToActiveTab("ENABLE_HOST");
-    setMessage("The helper will always appear on this host.");
+    setMessage(t("helperAlwaysAppear"));
     await refresh();
   } catch (error) {
-    setMessage("Could not allow this page.");
+    setMessage(t("couldNotAllow"));
   }
 });
 
 document.getElementById("disable-host").addEventListener("click", async () => {
   try {
     await sendToActiveTab("DISABLE_HOST");
-    setMessage("The helper will stay hidden on this host.");
+    setMessage(t("helperHiddenHost"));
     await refresh();
   } catch (error) {
-    setMessage("Could not block this page.");
+    setMessage(t("couldNotBlock"));
   }
 });
 
@@ -73,4 +97,8 @@ document.getElementById("open-options").addEventListener("click", () => {
   chrome.runtime.openOptionsPage();
 });
 
-refresh();
+getSettings().then((settings) => {
+  currentLanguage = window.SHELLY_INSTALLER_HELPER_I18N.normalizeLanguage(settings.language);
+  applyTranslations();
+  refresh();
+});

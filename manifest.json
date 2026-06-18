@@ -23,10 +23,11 @@
       "matches": [
         "http://*/*"
       ],
-      "js": [
-        "device_catalog.js",
-        "content.js"
-      ],
+            "js": [
+                "locales.js",
+                "device_catalog.js",
+                "content.js"
+            ],
       "css": [
         "content.css"
       ],

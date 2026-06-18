@@ -23,6 +23,26 @@ Action or Automation URLs without memorizing endpoint formats.
 - Filling the currently focused URL/webhook/action field.
 - Showing basic device information and output state when the device API is available.
 - Keeping a small installation checklist visible during setup.
+- Choosing the interface language from the options page.
+
+## Languages
+
+English is the default language. The options page also includes translations for:
+
+- Hungarian
+- Czech
+- Slovenian
+- Slovak
+- Romanian
+- French
+- Spanish
+- German
+- Dutch
+- Italian
+- Serbian
+- Croatian
+- Polish
+- Portuguese
 
 ## When The Helper Appears
 
@@ -91,5 +111,4 @@ Current version: `0.1.4`
 This is an early public version intended for testing with real Shelly
 installation workflows.
 
-See [ROADMAP.md](ROADMAP.md) for planned features, including multi-language
-interface support.
+See [ROADMAP.md](ROADMAP.md) for planned features.

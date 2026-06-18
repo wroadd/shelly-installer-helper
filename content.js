@@ -8,6 +8,7 @@
     autoDetectApi: true,
     autoDetectFingerprint: true,
     autoShowOnShellyAp: true,
+    language: "en",
     defaultIp: "192.168.1.30",
     allowHosts: [],
     denyHosts: []
@@ -28,26 +29,37 @@
     ? window.SHELLY_INSTALLER_DEVICE_CATALOG
     : [];
 
-  const modeOptions = {
-    "gen2-rgbw": [
-      ["light", "Light profile: /light/0..3"],
-      ["rgb", "RGB profile: /color/0"],
-      ["rgbw", "RGBW profile: /color/0"]
-    ],
-    "gen1-rgbw2": [
-      ["white", "White mode: /white/0..3"],
-      ["color", "Color mode: /color/0"]
-    ],
-    "gen2-light": [["light", "Light component: /light/0.."]],
-    "gen1-dimmer": [["white", "Dimmer/light endpoint"]],
-    "relay": [["relay", "Relay/Switch: /relay/0.."]],
-    "relay-cover": [
-      ["switch", "Relay/Switch mode: /relay/0..1"],
-      ["cover", "Cover/roller mode: /roller/0"]
-    ],
-    "cover": [["cover", "Cover/roller endpoint"]],
-    "diagnostic": [["diagnostic", "No control URL template"]]
-  };
+  function currentLanguage() {
+    return window.SHELLY_INSTALLER_HELPER_I18N.normalizeLanguage(state.settings.language);
+  }
+
+  function t(key, replacements) {
+    return window.SHELLY_INSTALLER_HELPER_I18N.t(currentLanguage(), key, replacements);
+  }
+
+  function modeOptionsForKind(kind) {
+    const options = {
+      "gen2-rgbw": [
+        ["light", t("lightProfile")],
+        ["rgb", t("rgbProfile")],
+        ["rgbw", t("rgbwProfile")]
+      ],
+      "gen1-rgbw2": [
+        ["white", t("whiteMode")],
+        ["color", t("colorMode")]
+      ],
+      "gen2-light": [["light", t("lightComponent")]],
+      "gen1-dimmer": [["white", t("dimmerEndpoint")]],
+      "relay": [["relay", t("relayEndpoint")]],
+      "relay-cover": [
+        ["switch", t("relaySwitchMode")],
+        ["cover", t("coverMode")]
+      ],
+      "cover": [["cover", t("coverEndpoint")]],
+      "diagnostic": [["diagnostic", t("noControlTemplate")]]
+    };
+    return options[kind] || options.diagnostic;
+  }
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -137,10 +149,10 @@
       return { active: false, reason: "denylist" };
     }
     if (settings.allowHosts.includes(hostKey)) {
-      return { active: true, reason: "manual allow" };
+      return { active: true, reason: t("manualAllow") };
     }
     if (settings.autoShowOnShellyAp && location.hostname === "192.168.33.1") {
-      return { active: true, reason: "Shelly AP address", likely: true };
+      return { active: true, reason: t("shellyApAddress"), likely: true };
     }
     if (settings.autoDetectApi) {
       try {
@@ -182,8 +194,8 @@
   }
 
   function deviceLabel(info) {
-    if (!info) return "Shelly device";
-    return info.app || info.type || info.model || info.id || "Shelly device";
+    if (!info) return t("shellyDevice");
+    return info.app || info.type || info.model || info.id || t("shellyDevice");
   }
 
   function catalogLabel(entry) {
@@ -260,7 +272,7 @@
     const options = DEVICE_CATALOG.map((entry) => (
       `<option value="${escapeText(entry.model)}">${escapeText(catalogLabel(entry))}</option>`
     )).join("");
-    select.innerHTML = options || '<option value="">No device catalog</option>';
+    select.innerHTML = options || `<option value="">${escapeText(t("noDeviceCatalog"))}</option>`;
     if (detected && [...select.options].some((option) => option.value === detected)) {
       select.value = detected;
     } else if (previous && [...select.options].some((option) => option.value === previous)) {
@@ -273,12 +285,12 @@
     const previous = select.value;
     const count = selectedChannelCount();
     if (count <= 0) {
-      select.innerHTML = '<option value="0">no channel</option>';
+      select.innerHTML = `<option value="0">${escapeText(t("noChannel"))}</option>`;
       select.disabled = true;
       return;
     }
     select.innerHTML = Array.from({ length: count }, (_, index) => (
-      `<option value="${index}">Channel ${index}</option>`
+      `<option value="${index}">${escapeText(t("channel"))} ${index}</option>`
     )).join("");
     if ([...select.options].some((option) => option.value === previous)) {
       select.value = previous;
@@ -349,15 +361,15 @@
 
   function buildTemplates(url) {
     if (!url) {
-      return "This device type does not have a safe control URL template yet. Use the device info and diagnostics section, or choose a relay, light or RGBW device.";
+      return t("noSafeTemplate");
     }
     const escapedUrl = url.replace(/"/g, "\\\"");
     return [
       `Shelly Action URL:\n${url}`,
       "",
-      `curl test:\ncurl -sS "${escapedUrl}"`,
+      `${t("curlTest")}:\ncurl -sS "${escapedUrl}"`,
       "",
-      "Home Assistant REST command:",
+      t("homeAssistantRest"),
       "rest_command:",
       "  shelly_action:",
       `    url: "${escapedUrl}"`
@@ -398,7 +410,7 @@
     const kind = selectedHelperKind();
     const modeSelect = rootElement.querySelector('[data-helper="mode"]');
     const current = modeSelect.value;
-    modeSelect.innerHTML = (modeOptions[kind] || modeOptions.diagnostic).map((item) => `<option value="${item[0]}">${escapeText(item[1])}</option>`).join("");
+    modeSelect.innerHTML = modeOptionsForKind(kind).map((item) => `<option value="${item[0]}">${escapeText(item[1])}</option>`).join("");
     if ([...modeSelect.options].some((option) => option.value === current)) modeSelect.value = current;
   }
 
@@ -418,7 +430,7 @@
     updateVisibility();
     const url = buildAutomationUrl();
     rootElement.querySelector('[data-helper="url"]').value = url;
-    rootElement.querySelector('[data-helper="url"]').placeholder = url ? "" : "This device does not have a control URL template.";
+    rootElement.querySelector('[data-helper="url"]').placeholder = url ? "" : t("noDeviceUrlTemplate");
     rootElement.querySelector('[data-helper="templates"]').textContent = buildTemplates(url);
   }
 
@@ -427,9 +439,9 @@
     const status = state.status || {};
     const config = state.config || {};
     const rows = [
-      ["Device", deviceLabel(info)],
-      ["Detection", state.detection.reason],
-      ["Generation", state.detection.generation || (info && info.gen ? `Gen${info.gen}` : "unknown")],
+      [t("device"), deviceLabel(info)],
+      [t("detection"), state.detection.reason],
+      [t("generation"), state.detection.generation || (info && info.gen ? `Gen${info.gen}` : t("unknown"))],
       ["Firmware", info && (info.ver || info.fw || info.fw_id) || "n/a"],
       ["IP/host", location.host],
       ["Wi-Fi", status.wifi ? `${status.wifi.status || "n/a"} ${status.wifi.ssid || ""}` : "n/a"],
@@ -441,11 +453,11 @@
     )).join("");
 
     const checks = [
-      ["Wi-Fi connection verified", !!(status.wifi && (status.wifi.status === "got ip" || status.wifi.sta_ip))],
-      ["Firmware version recorded", !!(info && (info.ver || info.fw || info.fw_id))],
-      ["Cloud/MQTT set as intended", !!(config.cloud || config.mqtt || status.cloud || status.mqtt)],
-      ["Actions/Automations URL tested", false],
-      ["Physical channel matches the label", false]
+      [t("wifiVerified"), !!(status.wifi && (status.wifi.status === "got ip" || status.wifi.sta_ip))],
+      [t("firmwareRecorded"), !!(info && (info.ver || info.fw || info.fw_id))],
+      [t("cloudMqttSet"), !!(config.cloud || config.mqtt || status.cloud || status.mqtt)],
+      [t("actionUrlTested"), false],
+      [t("physicalChannelMatches"), false]
     ];
     rootElement.querySelector(".sih-checklist").innerHTML = checks.map(([label, checked]) => (
       `<li><input type="checkbox" ${checked ? "checked" : ""}><span>${escapeText(label)}</span></li>`
@@ -478,7 +490,7 @@
     }
     const target = rootElement.querySelector(".sih-relay-list");
     if (!relays.length) {
-      target.innerHTML = '<div class="sih-empty">No relay or light output was found on this page.</div>';
+      target.innerHTML = `<div class="sih-empty">${escapeText(t("noOutputFound"))}</div>`;
       return;
     }
     target.innerHTML = relays.map((relay) => (
@@ -496,81 +508,81 @@
     const defaultIp = state.settings.defaultIp || location.host || "192.168.1.30";
     return `
       <div class="sih-wrap">
-        <button class="sih-tab" type="button" aria-label="Open Shelly helper"><span></span></button>
-        <aside class="sih-panel" aria-label="Shelly installer helper">
+        <button class="sih-tab" type="button" aria-label="${escapeText(t("openShellyHelper"))}"><span></span></button>
+        <aside class="sih-panel" aria-label="${escapeText(t("shellyInstallerHelper"))}">
           <div class="sih-head">
             <div>
               <p class="sih-eyebrow">Shelly helper</p>
-              <p class="sih-title">Installer control panel</p>
+              <p class="sih-title">${escapeText(t("installerPanel"))}</p>
             </div>
           </div>
           <div class="sih-body">
-            <button class="sih-tool-button" type="button" data-open-helper>Automation URL helper</button>
-            <button class="sih-tool-button" type="button" data-refresh>Refresh device data</button>
-            <div class="sih-section-title">Device detection</div>
-            <div class="sih-card sih-device-info"><div class="sih-empty">Loading...</div></div>
-            <div class="sih-section-title">Current output state</div>
-            <div class="sih-relay-list"><div class="sih-empty">Loading state...</div></div>
-            <div class="sih-section-title">Installation checklist</div>
+            <button class="sih-tool-button" type="button" data-open-helper>${escapeText(t("automationUrlHelper"))}</button>
+            <button class="sih-tool-button" type="button" data-refresh>${escapeText(t("refreshDeviceData"))}</button>
+            <div class="sih-section-title">${escapeText(t("deviceDetection"))}</div>
+            <div class="sih-card sih-device-info"><div class="sih-empty">${escapeText(t("loading"))}</div></div>
+            <div class="sih-section-title">${escapeText(t("outputState"))}</div>
+            <div class="sih-relay-list"><div class="sih-empty">${escapeText(t("loadingState"))}</div></div>
+            <div class="sih-section-title">${escapeText(t("installationChecklist"))}</div>
             <div class="sih-card"><ul class="sih-checklist"></ul></div>
           </div>
         </aside>
       </div>
       <div class="sih-helper-wrap" aria-hidden="true">
-        <aside class="sih-helper-panel" aria-label="Automation URL helper">
+        <aside class="sih-helper-panel" aria-label="${escapeText(t("automationUrlHelper"))}">
           <div class="sih-helper-head">
             <div>
-              <p class="sih-eyebrow">Helper</p>
-              <p class="sih-title">Automation URL builder</p>
+              <p class="sih-eyebrow">${escapeText(t("helper"))}</p>
+              <p class="sih-title">${escapeText(t("automationUrlBuilder"))}</p>
             </div>
-            <button class="sih-close" type="button" aria-label="Close helper">×</button>
+            <button class="sih-close" type="button" aria-label="${escapeText(t("closeHelper"))}">×</button>
           </div>
           <div class="sih-helper-body">
             <div class="sih-field">
-              <label>Device IP address or hostname</label>
+              <label>${escapeText(t("deviceIpHost"))}</label>
               <input data-helper="ip" type="text" value="${escapeText(defaultIp)}" inputmode="url">
             </div>
             <div class="sih-grid-2">
               <div class="sih-field">
-                <label>Device type</label>
+                <label>${escapeText(t("deviceType"))}</label>
                 <select data-helper="device"></select>
               </div>
               <div class="sih-field">
-                <label>Operating mode</label>
+                <label>${escapeText(t("operatingMode"))}</label>
                 <select data-helper="mode"></select>
               </div>
             </div>
             <div class="sih-grid-2">
               <div class="sih-field">
-                <label>Channel</label>
+                <label>${escapeText(t("channel"))}</label>
                 <select data-helper="channel"></select>
               </div>
               <div class="sih-field">
-                <label>Action</label>
+                <label>${escapeText(t("action"))}</label>
                 <select data-helper="turn">
-                  <option value="on">Turn on</option>
-                  <option value="off">Turn off</option>
-                  <option value="toggle">Toggle</option>
+                  <option value="on">${escapeText(t("turnOn"))}</option>
+                  <option value="off">${escapeText(t("turnOff"))}</option>
+                  <option value="toggle">${escapeText(t("toggle"))}</option>
                 </select>
               </div>
             </div>
             <div class="sih-grid-2">
               <div class="sih-field" data-field="brightness">
-                <label>Brightness (%)</label>
+                <label>${escapeText(t("brightness"))}</label>
                 <input data-helper="brightness" type="number" min="0" max="100" value="80">
               </div>
               <div class="sih-field">
-                <label>Transition (ms)</label>
-                <input data-helper="transition" type="number" min="0" step="100" placeholder="e.g. 500">
+                <label>${escapeText(t("transition"))}</label>
+                <input data-helper="transition" type="number" min="0" step="100" placeholder="${escapeText(t("transitionPlaceholder"))}">
               </div>
             </div>
             <div class="sih-grid-2">
               <div class="sih-field">
-                <label>Timer / auto-off (s)</label>
-                <input data-helper="timer" type="number" min="0" placeholder="optional">
+                <label>${escapeText(t("timer"))}</label>
+                <input data-helper="timer" type="number" min="0" placeholder="${escapeText(t("optional"))}">
               </div>
               <div class="sih-field" data-field="white">
-                <label>White level (0-255)</label>
+                <label>${escapeText(t("whiteLevel"))}</label>
                 <input data-helper="white" type="number" min="0" max="255" value="0">
               </div>
             </div>
@@ -578,23 +590,23 @@
               <div class="sih-field"><label>R</label><input data-helper="red" type="number" min="0" max="255" value="255"></div>
               <div class="sih-field"><label>G</label><input data-helper="green" type="number" min="0" max="255" value="0"></div>
               <div class="sih-field"><label>B</label><input data-helper="blue" type="number" min="0" max="255" value="0"></div>
-              <div class="sih-field"><label>Profile</label><input type="text" value="RGB/RGBW" disabled></div>
+              <div class="sih-field"><label>${escapeText(t("profile"))}</label><input type="text" value="RGB/RGBW" disabled></div>
             </div>
             <div class="sih-field">
-              <label>Generated URL</label>
+              <label>${escapeText(t("generatedUrl"))}</label>
               <textarea data-helper="url" readonly></textarea>
             </div>
             <div class="sih-actions">
-              <button class="sih-primary-action" type="button" data-insert>Insert into field</button>
-              <button class="sih-secondary-action" type="button" data-copy>Copy</button>
+              <button class="sih-primary-action" type="button" data-insert>${escapeText(t("insertIntoField"))}</button>
+              <button class="sih-secondary-action" type="button" data-copy>${escapeText(t("copy"))}</button>
             </div>
             <div class="sih-actions">
-              <button class="sih-secondary-action" type="button" data-copy-templates>Copy templates</button>
-              <button class="sih-secondary-action" type="button" data-run-test>Run URL test</button>
+              <button class="sih-secondary-action" type="button" data-copy-templates>${escapeText(t("copyTemplates"))}</button>
+              <button class="sih-secondary-action" type="button" data-run-test>${escapeText(t("runUrlTest"))}</button>
             </div>
-            <div class="sih-hint">Click the Automations/Actions URL field first, then open this helper. If no URL field is found, the URL is copied to the clipboard.</div>
+            <div class="sih-hint">${escapeText(t("helperHint"))}</div>
             <div class="sih-status" aria-live="polite"></div>
-            <div class="sih-section-title">Copyable templates</div>
+            <div class="sih-section-title">${escapeText(t("copyableTemplates"))}</div>
             <pre class="sih-output" data-helper="templates"></pre>
           </div>
         </aside>
@@ -610,7 +622,7 @@
   function setOpen(open) {
     const wrap = rootElement.querySelector(".sih-wrap");
     wrap.classList.toggle("sih-open", open);
-    rootElement.querySelector(".sih-tab").setAttribute("aria-label", open ? "Close Shelly helper" : "Open Shelly helper");
+    rootElement.querySelector(".sih-tab").setAttribute("aria-label", open ? t("closeShellyHelper") : t("openShellyHelper"));
     if (open) setHelperOpen(false);
   }
 
@@ -630,7 +642,7 @@
       await navigator.clipboard.writeText(text);
       setStatus(okMessage);
     } catch (error) {
-      setStatus("Clipboard is unavailable. Select the text manually.");
+      setStatus(t("clipboardUnavailable"));
     }
   }
 
@@ -640,20 +652,20 @@
     if (field) {
       field.focus();
       setNativeValue(field, url);
-      setStatus("URL inserted into the field.");
+      setStatus(t("urlInserted"));
       return;
     }
-    await copyText(url, "No URL field was found, so the URL was copied to the clipboard.");
+    await copyText(url, t("noUrlFieldCopied"));
   }
 
   async function runGeneratedUrl() {
     const url = buildAutomationUrl();
-    setStatus("Running test URL...");
+    setStatus(t("runningTestUrl"));
     try {
       await fetch(url, { mode: "no-cors", cache: "no-store" });
-      setStatus("Test request sent. Check the device response.");
+      setStatus(t("testRequestSent"));
     } catch (error) {
-      setStatus("The test request did not run. Check the IP address and network.");
+      setStatus(t("testRequestFailed"));
     }
   }
 
@@ -681,8 +693,8 @@
       control.addEventListener("input", updateGeneratedUrl);
       control.addEventListener("change", updateGeneratedUrl);
     });
-    rootElement.querySelector("[data-copy]").addEventListener("click", () => copyText(buildAutomationUrl(), "URL copied to clipboard."));
-    rootElement.querySelector("[data-copy-templates]").addEventListener("click", () => copyText(rootElement.querySelector('[data-helper="templates"]').textContent, "Templates copied to clipboard."));
+    rootElement.querySelector("[data-copy]").addEventListener("click", () => copyText(buildAutomationUrl(), t("urlCopied")));
+    rootElement.querySelector("[data-copy-templates]").addEventListener("click", () => copyText(rootElement.querySelector('[data-helper="templates"]').textContent, t("templatesCopied")));
     rootElement.querySelector("[data-insert]").addEventListener("click", insertUrl);
     rootElement.querySelector("[data-run-test]").addEventListener("click", runGeneratedUrl);
     document.addEventListener("focusin", (event) => {
@@ -751,7 +763,7 @@
     }
     if (message.type === "ENABLE_HOST") {
       setHostPreference("allow").then(async () => {
-        state.detection = { active: true, reason: "manual allow" };
+        state.detection = { active: true, reason: t("manualAllow") };
         state.active = true;
         injectUi();
         await refreshDeviceData().catch(() => {});
