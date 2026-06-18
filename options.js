@@ -56,13 +56,13 @@ async function save() {
     denyHosts: linesToList(document.getElementById("denyHosts").value)
   };
   await saveSettings(settings);
-  setMessage("Beállítások mentve.");
+  setMessage("Settings saved.");
 }
 
 async function reset() {
   await saveSettings(DEFAULT_SETTINGS);
   await load();
-  setMessage("Alapértelmezett beállítások visszaállítva.");
+  setMessage("Default settings restored.");
 }
 
 document.getElementById("save").addEventListener("click", save);

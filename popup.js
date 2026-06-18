@@ -17,7 +17,7 @@ async function activeTab() {
 
 async function sendToActiveTab(type) {
   const tab = await activeTab();
-  if (!tab || !tab.id) throw new Error("Nincs aktív lap.");
+  if (!tab || !tab.id) throw new Error("No active tab.");
   return chrome.tabs.sendMessage(tab.id, { source: SOURCE, type });
 }
 
@@ -30,11 +30,11 @@ function deviceName(state) {
 async function refresh() {
   try {
     const state = await sendToActiveTab("GET_PAGE_STATE");
-    setText("status", state.active ? `Aktív (${state.detection && state.detection.reason || "detektált"})` : "Nem aktív");
+    setText("status", state.active ? `Active (${state.detection && state.detection.reason || "detected"})` : "Not active");
     setText("host", state.host);
     setText("device", deviceName(state));
   } catch (error) {
-    setText("status", "Nem elérhető ezen a lapon");
+    setText("status", "Not available on this page");
     setText("host", "-");
     setText("device", "-");
   }
@@ -43,29 +43,29 @@ async function refresh() {
 document.getElementById("open-helper").addEventListener("click", async () => {
   try {
     await sendToActiveTab("OPEN_HELPER");
-    setMessage("Segédlet megnyitva az oldalon.");
+    setMessage("Helper opened on the page.");
   } catch (error) {
-    setMessage("A segédlet nem nyitható meg ezen a lapon.");
+    setMessage("The helper cannot be opened on this page.");
   }
 });
 
 document.getElementById("enable-host").addEventListener("click", async () => {
   try {
     await sendToActiveTab("ENABLE_HOST");
-    setMessage("Ezen a hoston mindig megjelenik.");
+    setMessage("The helper will always appear on this host.");
     await refresh();
   } catch (error) {
-    setMessage("Nem sikerült engedélyezni ezen a lapon.");
+    setMessage("Could not allow this page.");
   }
 });
 
 document.getElementById("disable-host").addEventListener("click", async () => {
   try {
     await sendToActiveTab("DISABLE_HOST");
-    setMessage("Ezen a hoston nem jelenik meg.");
+    setMessage("The helper will stay hidden on this host.");
     await refresh();
   } catch (error) {
-    setMessage("Nem sikerült tiltani ezen a lapon.");
+    setMessage("Could not block this page.");
   }
 });
 

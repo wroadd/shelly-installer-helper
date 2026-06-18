@@ -90,3 +90,6 @@ Current version: `0.1.4`
 
 This is an early public version intended for testing with real Shelly
 installation workflows.
+
+See [ROADMAP.md](ROADMAP.md) for planned features, including multi-language
+interface support.

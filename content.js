@@ -30,23 +30,23 @@
 
   const modeOptions = {
     "gen2-rgbw": [
-      ["light", "Light profil: /light/0..3"],
-      ["rgb", "RGB profil: /color/0"],
-      ["rgbw", "RGBW profil: /color/0"]
+      ["light", "Light profile: /light/0..3"],
+      ["rgb", "RGB profile: /color/0"],
+      ["rgbw", "RGBW profile: /color/0"]
     ],
     "gen1-rgbw2": [
-      ["white", "White mód: /white/0..3"],
-      ["color", "Color mód: /color/0"]
+      ["white", "White mode: /white/0..3"],
+      ["color", "Color mode: /color/0"]
     ],
-    "gen2-light": [["light", "Light komponens: /light/0.."]],
+    "gen2-light": [["light", "Light component: /light/0.."]],
     "gen1-dimmer": [["white", "Dimmer/light endpoint"]],
     "relay": [["relay", "Relay/Switch: /relay/0.."]],
     "relay-cover": [
-      ["switch", "Relay/Switch mód: /relay/0..1"],
-      ["cover", "Cover/roller mód: /roller/0"]
+      ["switch", "Relay/Switch mode: /relay/0..1"],
+      ["cover", "Cover/roller mode: /roller/0"]
     ],
     "cover": [["cover", "Cover/roller endpoint"]],
-    "diagnostic": [["diagnostic", "Nincs vezérlési URL sablon"]]
+    "diagnostic": [["diagnostic", "No control URL template"]]
   };
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -140,7 +140,7 @@
       return { active: true, reason: "manual allow" };
     }
     if (settings.autoShowOnShellyAp && location.hostname === "192.168.33.1") {
-      return { active: true, reason: "Shelly AP cím", likely: true };
+      return { active: true, reason: "Shelly AP address", likely: true };
     }
     if (settings.autoDetectApi) {
       try {
@@ -182,8 +182,8 @@
   }
 
   function deviceLabel(info) {
-    if (!info) return "Shelly eszköz";
-    return info.app || info.type || info.model || info.id || "Shelly eszköz";
+    if (!info) return "Shelly device";
+    return info.app || info.type || info.model || info.id || "Shelly device";
   }
 
   function catalogLabel(entry) {
@@ -260,7 +260,7 @@
     const options = DEVICE_CATALOG.map((entry) => (
       `<option value="${escapeText(entry.model)}">${escapeText(catalogLabel(entry))}</option>`
     )).join("");
-    select.innerHTML = options || '<option value="">Nincs eszközkatalógus</option>';
+    select.innerHTML = options || '<option value="">No device catalog</option>';
     if (detected && [...select.options].some((option) => option.value === detected)) {
       select.value = detected;
     } else if (previous && [...select.options].some((option) => option.value === previous)) {
@@ -273,12 +273,12 @@
     const previous = select.value;
     const count = selectedChannelCount();
     if (count <= 0) {
-      select.innerHTML = '<option value="0">nincs csatorna</option>';
+      select.innerHTML = '<option value="0">no channel</option>';
       select.disabled = true;
       return;
     }
     select.innerHTML = Array.from({ length: count }, (_, index) => (
-      `<option value="${index}">${index}. csatorna</option>`
+      `<option value="${index}">Channel ${index}</option>`
     )).join("");
     if ([...select.options].some((option) => option.value === previous)) {
       select.value = previous;
@@ -349,13 +349,13 @@
 
   function buildTemplates(url) {
     if (!url) {
-      return "Ehhez az eszköztípushoz még nincs biztonságos vezérlési URL sablon. Használd az eszközadat és diagnosztikai részt, vagy válassz relay/light/RGBW típusú eszközt.";
+      return "This device type does not have a safe control URL template yet. Use the device info and diagnostics section, or choose a relay, light or RGBW device.";
     }
     const escapedUrl = url.replace(/"/g, "\\\"");
     return [
       `Shelly Action URL:\n${url}`,
       "",
-      `curl teszt:\ncurl -sS "${escapedUrl}"`,
+      `curl test:\ncurl -sS "${escapedUrl}"`,
       "",
       "Home Assistant REST command:",
       "rest_command:",
@@ -382,7 +382,7 @@
       element.getAttribute("aria-label"),
       element.closest("label") ? element.closest("label").textContent : ""
     ].join(" ").toLowerCase();
-    return /url|uri|endpoint|webhook|address|cím|action/.test(haystack) || element.type === "url";
+    return /url|uri|endpoint|webhook|address|action/.test(haystack) || element.type === "url";
   }
 
   function findVisibleUrlField() {
@@ -418,7 +418,7 @@
     updateVisibility();
     const url = buildAutomationUrl();
     rootElement.querySelector('[data-helper="url"]').value = url;
-    rootElement.querySelector('[data-helper="url"]').placeholder = url ? "" : "Ehhez az eszközhöz nincs vezérlési URL sablon.";
+    rootElement.querySelector('[data-helper="url"]').placeholder = url ? "" : "This device does not have a control URL template.";
     rootElement.querySelector('[data-helper="templates"]').textContent = buildTemplates(url);
   }
 
@@ -427,9 +427,9 @@
     const status = state.status || {};
     const config = state.config || {};
     const rows = [
-      ["Eszköz", deviceLabel(info)],
-      ["Detektálás", state.detection.reason],
-      ["Generáció", state.detection.generation || (info && info.gen ? `Gen${info.gen}` : "ismeretlen")],
+      ["Device", deviceLabel(info)],
+      ["Detection", state.detection.reason],
+      ["Generation", state.detection.generation || (info && info.gen ? `Gen${info.gen}` : "unknown")],
       ["Firmware", info && (info.ver || info.fw || info.fw_id) || "n/a"],
       ["IP/host", location.host],
       ["Wi-Fi", status.wifi ? `${status.wifi.status || "n/a"} ${status.wifi.ssid || ""}` : "n/a"],
@@ -441,11 +441,11 @@
     )).join("");
 
     const checks = [
-      ["Wi-Fi kapcsolat ellenőrizve", !!(status.wifi && (status.wifi.status === "got ip" || status.wifi.sta_ip))],
-      ["Firmware verzió felírva", !!(info && (info.ver || info.fw || info.fw_id))],
-      ["Cloud/MQTT szándék szerint beállítva", !!(config.cloud || config.mqtt || status.cloud || status.mqtt)],
-      ["Actions/Automations URL tesztelve", false],
-      ["Fizikai csatorna és felirat egyezik", false]
+      ["Wi-Fi connection verified", !!(status.wifi && (status.wifi.status === "got ip" || status.wifi.sta_ip))],
+      ["Firmware version recorded", !!(info && (info.ver || info.fw || info.fw_id))],
+      ["Cloud/MQTT set as intended", !!(config.cloud || config.mqtt || status.cloud || status.mqtt)],
+      ["Actions/Automations URL tested", false],
+      ["Physical channel matches the label", false]
     ];
     rootElement.querySelector(".sih-checklist").innerHTML = checks.map(([label, checked]) => (
       `<li><input type="checkbox" ${checked ? "checked" : ""}><span>${escapeText(label)}</span></li>`
@@ -478,7 +478,7 @@
     }
     const target = rootElement.querySelector(".sih-relay-list");
     if (!relays.length) {
-      target.innerHTML = '<div class="sih-empty">Ehhez az oldalhoz most nem találtam relé vagy light kimenetet.</div>';
+      target.innerHTML = '<div class="sih-empty">No relay or light output was found on this page.</div>';
       return;
     }
     target.innerHTML = relays.map((relay) => (
@@ -496,81 +496,81 @@
     const defaultIp = state.settings.defaultIp || location.host || "192.168.1.30";
     return `
       <div class="sih-wrap">
-        <button class="sih-tab" type="button" aria-label="Shelly segédlet megnyitása"><span></span></button>
-        <aside class="sih-panel" aria-label="Shelly telepítő segédlet">
+        <button class="sih-tab" type="button" aria-label="Open Shelly helper"><span></span></button>
+        <aside class="sih-panel" aria-label="Shelly installer helper">
           <div class="sih-head">
             <div>
               <p class="sih-eyebrow">Shelly helper</p>
-              <p class="sih-title">Telepítő vezérlőpanel</p>
+              <p class="sih-title">Installer control panel</p>
             </div>
           </div>
           <div class="sih-body">
-            <button class="sih-tool-button" type="button" data-open-helper>Automation URL segédlet</button>
-            <button class="sih-tool-button" type="button" data-refresh>Eszközadatok frissítése</button>
-            <div class="sih-section-title">Eszköz felismerés</div>
-            <div class="sih-card sih-device-info"><div class="sih-empty">Betöltés...</div></div>
-            <div class="sih-section-title">Kimenetek pillanatnyi állapota</div>
-            <div class="sih-relay-list"><div class="sih-empty">Állapot betöltése...</div></div>
-            <div class="sih-section-title">Telepítési checklist</div>
+            <button class="sih-tool-button" type="button" data-open-helper>Automation URL helper</button>
+            <button class="sih-tool-button" type="button" data-refresh>Refresh device data</button>
+            <div class="sih-section-title">Device detection</div>
+            <div class="sih-card sih-device-info"><div class="sih-empty">Loading...</div></div>
+            <div class="sih-section-title">Current output state</div>
+            <div class="sih-relay-list"><div class="sih-empty">Loading state...</div></div>
+            <div class="sih-section-title">Installation checklist</div>
             <div class="sih-card"><ul class="sih-checklist"></ul></div>
           </div>
         </aside>
       </div>
       <div class="sih-helper-wrap" aria-hidden="true">
-        <aside class="sih-helper-panel" aria-label="Automation URL segédlet">
+        <aside class="sih-helper-panel" aria-label="Automation URL helper">
           <div class="sih-helper-head">
             <div>
-              <p class="sih-eyebrow">Segédlet</p>
-              <p class="sih-title">Automation URL kitöltő</p>
+              <p class="sih-eyebrow">Helper</p>
+              <p class="sih-title">Automation URL builder</p>
             </div>
-            <button class="sih-close" type="button" aria-label="Segédlet bezárása">×</button>
+            <button class="sih-close" type="button" aria-label="Close helper">×</button>
           </div>
           <div class="sih-helper-body">
             <div class="sih-field">
-              <label>Eszköz IP címe vagy hostneve</label>
+              <label>Device IP address or hostname</label>
               <input data-helper="ip" type="text" value="${escapeText(defaultIp)}" inputmode="url">
             </div>
             <div class="sih-grid-2">
               <div class="sih-field">
-                <label>Eszköz típus</label>
+                <label>Device type</label>
                 <select data-helper="device"></select>
               </div>
               <div class="sih-field">
-                <label>Működési mód</label>
+                <label>Operating mode</label>
                 <select data-helper="mode"></select>
               </div>
             </div>
             <div class="sih-grid-2">
               <div class="sih-field">
-                <label>Csatorna</label>
+                <label>Channel</label>
                 <select data-helper="channel"></select>
               </div>
               <div class="sih-field">
-                <label>Művelet</label>
+                <label>Action</label>
                 <select data-helper="turn">
-                  <option value="on">Bekapcsolás</option>
-                  <option value="off">Kikapcsolás</option>
-                  <option value="toggle">Átváltás</option>
+                  <option value="on">Turn on</option>
+                  <option value="off">Turn off</option>
+                  <option value="toggle">Toggle</option>
                 </select>
               </div>
             </div>
             <div class="sih-grid-2">
               <div class="sih-field" data-field="brightness">
-                <label>Fényerő (%)</label>
+                <label>Brightness (%)</label>
                 <input data-helper="brightness" type="number" min="0" max="100" value="80">
               </div>
               <div class="sih-field">
-                <label>Átmenet (ms)</label>
-                <input data-helper="transition" type="number" min="0" step="100" placeholder="pl. 500">
+                <label>Transition (ms)</label>
+                <input data-helper="transition" type="number" min="0" step="100" placeholder="e.g. 500">
               </div>
             </div>
             <div class="sih-grid-2">
               <div class="sih-field">
-                <label>Timer / auto-off (mp)</label>
-                <input data-helper="timer" type="number" min="0" placeholder="opcionális">
+                <label>Timer / auto-off (s)</label>
+                <input data-helper="timer" type="number" min="0" placeholder="optional">
               </div>
               <div class="sih-field" data-field="white">
-                <label>Fehér szint (0-255)</label>
+                <label>White level (0-255)</label>
                 <input data-helper="white" type="number" min="0" max="255" value="0">
               </div>
             </div>
@@ -578,23 +578,23 @@
               <div class="sih-field"><label>R</label><input data-helper="red" type="number" min="0" max="255" value="255"></div>
               <div class="sih-field"><label>G</label><input data-helper="green" type="number" min="0" max="255" value="0"></div>
               <div class="sih-field"><label>B</label><input data-helper="blue" type="number" min="0" max="255" value="0"></div>
-              <div class="sih-field"><label>Profil</label><input type="text" value="RGB/RGBW" disabled></div>
+              <div class="sih-field"><label>Profile</label><input type="text" value="RGB/RGBW" disabled></div>
             </div>
             <div class="sih-field">
-              <label>Generált URL</label>
+              <label>Generated URL</label>
               <textarea data-helper="url" readonly></textarea>
             </div>
             <div class="sih-actions">
-              <button class="sih-primary-action" type="button" data-insert>Mezőbe illesztés</button>
-              <button class="sih-secondary-action" type="button" data-copy>Másolás</button>
+              <button class="sih-primary-action" type="button" data-insert>Insert into field</button>
+              <button class="sih-secondary-action" type="button" data-copy>Copy</button>
             </div>
             <div class="sih-actions">
-              <button class="sih-secondary-action" type="button" data-copy-templates>Sablonok másolása</button>
-              <button class="sih-secondary-action" type="button" data-run-test>URL teszt futtatása</button>
+              <button class="sih-secondary-action" type="button" data-copy-templates>Copy templates</button>
+              <button class="sih-secondary-action" type="button" data-run-test>Run URL test</button>
             </div>
-            <div class="sih-hint">Előbb kattints az Automations/Actions URL mezőjébe, utána nyisd meg ezt a segédletet. Ha nem talál URL mezőt, vágólapra másol.</div>
+            <div class="sih-hint">Click the Automations/Actions URL field first, then open this helper. If no URL field is found, the URL is copied to the clipboard.</div>
             <div class="sih-status" aria-live="polite"></div>
-            <div class="sih-section-title">Másolható sablonok</div>
+            <div class="sih-section-title">Copyable templates</div>
             <pre class="sih-output" data-helper="templates"></pre>
           </div>
         </aside>
@@ -610,7 +610,7 @@
   function setOpen(open) {
     const wrap = rootElement.querySelector(".sih-wrap");
     wrap.classList.toggle("sih-open", open);
-    rootElement.querySelector(".sih-tab").setAttribute("aria-label", open ? "Shelly segédlet bezárása" : "Shelly segédlet megnyitása");
+    rootElement.querySelector(".sih-tab").setAttribute("aria-label", open ? "Close Shelly helper" : "Open Shelly helper");
     if (open) setHelperOpen(false);
   }
 
@@ -630,7 +630,7 @@
       await navigator.clipboard.writeText(text);
       setStatus(okMessage);
     } catch (error) {
-      setStatus("A vágólap nem érhető el, jelöld ki a szöveget kézzel.");
+      setStatus("Clipboard is unavailable. Select the text manually.");
     }
   }
 
@@ -640,20 +640,20 @@
     if (field) {
       field.focus();
       setNativeValue(field, url);
-      setStatus("URL beillesztve a mezőbe.");
+      setStatus("URL inserted into the field.");
       return;
     }
-    await copyText(url, "Nem találtam URL mezőt, ezért vágólapra másoltam.");
+    await copyText(url, "No URL field was found, so the URL was copied to the clipboard.");
   }
 
   async function runGeneratedUrl() {
     const url = buildAutomationUrl();
-    setStatus("Teszt URL futtatása...");
+    setStatus("Running test URL...");
     try {
       await fetch(url, { mode: "no-cors", cache: "no-store" });
-      setStatus("Teszt kérés elküldve. Ellenőrizd az eszköz reakcióját.");
+      setStatus("Test request sent. Check the device response.");
     } catch (error) {
-      setStatus("A teszt kérés nem futott le. Ellenőrizd az IP-t és a hálózatot.");
+      setStatus("The test request did not run. Check the IP address and network.");
     }
   }
 
@@ -681,8 +681,8 @@
       control.addEventListener("input", updateGeneratedUrl);
       control.addEventListener("change", updateGeneratedUrl);
     });
-    rootElement.querySelector("[data-copy]").addEventListener("click", () => copyText(buildAutomationUrl(), "URL vágólapra másolva."));
-    rootElement.querySelector("[data-copy-templates]").addEventListener("click", () => copyText(rootElement.querySelector('[data-helper="templates"]').textContent, "Sablonok vágólapra másolva."));
+    rootElement.querySelector("[data-copy]").addEventListener("click", () => copyText(buildAutomationUrl(), "URL copied to clipboard."));
+    rootElement.querySelector("[data-copy-templates]").addEventListener("click", () => copyText(rootElement.querySelector('[data-helper="templates"]').textContent, "Templates copied to clipboard."));
     rootElement.querySelector("[data-insert]").addEventListener("click", insertUrl);
     rootElement.querySelector("[data-run-test]").addEventListener("click", runGeneratedUrl);
     document.addEventListener("focusin", (event) => {
