@@ -1,0 +1,116 @@
+body {
+  margin: 0;
+  background: #f4f7f8;
+  color: #17242b;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+}
+
+main {
+  display: grid;
+  gap: 16px;
+  width: min(820px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 32px 0;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: #d86f21;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.card,
+.grid label {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid #dbe5e8;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+label span,
+.check span {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+input[type="text"],
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #c8d6da;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 14px;
+  padding: 10px;
+}
+
+textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 7px;
+  background: #d86f21;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+button:hover {
+  background: #ef7d27;
+}
+
+#reset {
+  border: 1px solid #c8d6da;
+  background: #fff;
+  color: #17242b;
+}
+
+#reset:hover {
+  background: #edf3f5;
+}
+
+#message {
+  min-height: 20px;
+  margin: 0;
+  color: #2e5c65;
+  font-size: 14px;
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

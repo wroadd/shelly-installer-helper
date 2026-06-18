@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Shelly Installer Helper beállítások</title>
+    <link rel="stylesheet" href="options.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">Shelly helper</p>
+        <h1>Beállítások</h1>
+      </header>
+
+      <section class="card">
+        <label class="check">
+          <input id="autoDetectApi" type="checkbox">
+          <span>Automatikus Shelly API felismerés</span>
+        </label>
+        <label class="check">
+          <input id="autoShowOnShellyAp" type="checkbox">
+          <span>Automatikus megjelenés a 192.168.33.1 címen</span>
+        </label>
+        <label class="check">
+          <input id="autoDetectFingerprint" type="checkbox">
+          <span>HTML/UI fingerprint fallback belső hálózati címeken</span>
+        </label>
+      </section>
+
+      <section class="card">
+        <label>
+          <span>Alapértelmezett eszköz IP/host az URL generátorban</span>
+          <input id="defaultIp" type="text" placeholder="192.168.1.30">
+        </label>
+      </section>
+
+      <section class="grid">
+        <label>
+          <span>Mindig engedélyezett hostok</span>
+          <textarea id="allowHosts" placeholder="http://192.168.1.42"></textarea>
+        </label>
+        <label>
+          <span>Tiltott hostok</span>
+          <textarea id="denyHosts" placeholder="http://example.local"></textarea>
+        </label>
+      </section>
+
+      <section class="actions">
+        <button id="save" type="button">Mentés</button>
+        <button id="reset" type="button">Alapértelmezés</button>
+      </section>
+      <p id="message" aria-live="polite"></p>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>
